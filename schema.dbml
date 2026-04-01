@@ -1,0 +1,171 @@
+/* Table initiative is NOT part of the actual database schema */
+Table initiative {
+  id integer [pk, note: "external table"]
+}
+
+Table rat_assessments {
+  id integer [pk, not null]
+  initiative_id integer [not null]
+
+  indexes {
+    initiative_id [name: "ix_rat_assessments_initiative_id"]
+  }
+}
+
+Table barrier_entries {
+  id integer [pk, not null]
+  rat_assessment_id integer [not null]
+  barrier_id varchar [not null]
+  barrier_category varchar [not null]
+  barrier_name varchar [not null]
+  likelihood integer [not null]
+  impact integer [not null]
+  score float [not null]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    rat_assessment_id [name: "ix_barrier_entries_rat_assessment_id"]
+    barrier_id [name: "ix_barrier_entries_barrier_id"]
+    barrier_category [name: "ix_barrier_entries_barrier_category"]
+  }
+}
+
+Table barrier_category_results {
+  id integer [pk, not null]
+  rat_assessment_id integer [not null]
+  category_name varchar [not null]
+  persona_impact float [not null]
+  persona_likelihood float [not null]
+  persona_risk_score float [not null]
+  risk_level varchar [not null]
+  risk_percentage float [not null]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    rat_assessment_id [name: "ix_barrier_category_results_rat_assessment_id"]
+    category_name [name: "ix_barrier_category_results_category_name"]
+  }
+}
+
+Table barrier_incentive_results {
+  id integer [pk, not null]
+  rat_assessment_id integer [not null]
+  incentive_id integer [not null]
+  incentive_name varchar [not null]
+  incentive_type varchar [not null]
+  incentive_category varchar [not null]
+  explanation varchar [not null]
+  source varchar [not null]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    rat_assessment_id [name: "ix_barrier_incentive_results_rat_assessment_id"]
+    incentive_id [name: "ix_barrier_incentive_results_incentive_id"]
+  }
+}
+
+Table barrier_incentive_result_links {
+  id integer [pk, not null]
+  barrier_incentive_result_id integer [not null]
+  barrier_id varchar [not null]
+  barrier_category varchar [not null]
+  barrier_name varchar [not null]
+
+  indexes {
+    barrier_incentive_result_id [name: "ix_barrier_incentive_result_links_barrier_incentive_result_id"]
+    barrier_id [name: "ix_barrier_incentive_result_links_barrier_id"]
+    barrier_category [name: "ix_barrier_incentive_result_links_barrier_category"]
+  }
+}
+
+Table custom_kpi_definitions {
+  id integer [pk, not null]
+  rat_assessment_id integer [not null]
+  custom_kpi_code varchar [not null]
+  category_name varchar [not null]
+  name varchar [not null]
+  primary_uses_json text [not null]
+  units_of_measurement varchar [not null]
+  description text [not null]
+  roles_json text [not null]
+  is_active boolean [not null]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    rat_assessment_id [name: "ix_custom_kpi_definitions_rat_assessment_id"]
+    custom_kpi_code [name: "ix_custom_kpi_definitions_custom_kpi_code"]
+    category_name [name: "ix_custom_kpi_definitions_category_name"]
+    (rat_assessment_id, custom_kpi_code) [unique, name: "uq_custom_kpi_code_per_rat"]
+  }
+}
+
+Table kpi_assessments {
+  id integer [pk, not null]
+  rat_assessment_id integer [not null]
+  version integer [not null]
+  project_name varchar [not null]
+  project_start_year integer [not null]
+  project_start_month integer [not null]
+  project_end_year integer [not null]
+  project_end_month integer [not null]
+  project_duration_months integer [not null]
+  assessment_year integer [not null]
+  assessment_month integer [not null]
+  assessment_month_index integer [not null]
+  assessed_at datetime [not null]
+  created_at datetime [not null]
+
+  indexes {
+    rat_assessment_id [name: "ix_kpi_assessments_rat_assessment_id"]
+    version [name: "ix_kpi_assessments_version"]
+    assessed_at [name: "ix_kpi_assessments_assessed_at"]
+  }
+}
+
+Table kpi_assessment_entries {
+  id integer [pk, not null]
+  kpi_assessment_id integer [not null]
+  source_type varchar [not null]
+  kpi_code varchar [not null]
+  category_name varchar [not null]
+  subcategory_name varchar
+  kpi_name varchar [not null]
+  primary_uses_json text [not null]
+  units_of_measurement varchar [not null]
+  description text [not null]
+  roles_json text [not null]
+  kpi_start_year integer [not null]
+  kpi_start_month integer [not null]
+  kpi_end_year integer [not null]
+  kpi_end_month integer [not null]
+  kpi_start_month_index integer [not null]
+  kpi_end_month_index integer [not null]
+  data_quality integer [not null]
+  input_mode varchar [not null]
+  progress_stage varchar
+  current_value float
+  target_value float
+  created_at datetime [not null]
+
+  indexes {
+    kpi_assessment_id [name: "ix_kpi_assessment_entries_kpi_assessment_id"]
+    kpi_code [name: "ix_kpi_assessment_entries_kpi_code"]
+    category_name [name: "ix_kpi_assessment_entries_category_name"]
+  }
+}
+
+
+Ref: barrier_entries.rat_assessment_id > rat_assessments.id [delete: cascade]
+Ref: barrier_category_results.rat_assessment_id > rat_assessments.id [delete: cascade]
+Ref: barrier_incentive_results.rat_assessment_id > rat_assessments.id [delete: cascade]
+Ref: barrier_incentive_result_links.barrier_incentive_result_id > barrier_incentive_results.id [delete: cascade]
+Ref: custom_kpi_definitions.rat_assessment_id > rat_assessments.id [delete: cascade]
+Ref: kpi_assessments.rat_assessment_id > rat_assessments.id [delete: cascade]
+Ref: kpi_assessment_entries.kpi_assessment_id > kpi_assessments.id [delete: cascade]
+
+
+Ref: rat_assessments.initiative_id > initiative.id
